@@ -2,9 +2,10 @@ import clientPromise from "../../utils/database";
 
 export default async function helloAPI(req, res) {
   if (req.method === 'POST') {
-    const { name, email, age } = req.body;
-    if (!name || !email || !age){
-      res.status(400).json({message: 'Faltando nome, email ou age'});
+    const { name, email, cellphone, teacher } = req.body;
+    
+    if (!name || !email || !cellphone || !teacher){
+      res.status(400).json({message: 'Faltando nome, email, cellphone ou teacher'});
       return;
     }
 
@@ -17,7 +18,8 @@ export default async function helloAPI(req, res) {
       .insertOne({
       name: name,
       email: email,
-      age: age,
+      cellphone: cellphone,
+      teacher: teacher,
     });
   
     res.status(200).json(response.ops[0]);

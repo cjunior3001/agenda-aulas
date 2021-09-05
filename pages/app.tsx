@@ -1,10 +1,11 @@
 import { signIn, signOut, useSession } from "next-auth/client"
 
-export default function Page() {
+export default function AppPage() {
   const [session, loading] = useSession()
 
   return (
     <>
+      <h1>Bem vindo a pagina app</h1>
       {!session && (
         <div className="text-3xl">
           Not signed in <br />
