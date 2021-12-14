@@ -1,8 +1,8 @@
-import clientPromise from "../../utils/database";
+import clientPromise from "../../../utils/database";
 
 export default async function helloAPI(req, res) {
   if (req.method === 'GET') {
-    const { courses } = req.body;
+    const { courses } = req.query;
 
     if (!courses) {
       res.status(400).json({ error: "falta courses name para consultar"});

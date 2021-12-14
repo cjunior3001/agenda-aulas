@@ -1,10 +1,13 @@
-import { signIn, signOut, useSession } from "next-auth/client"
+import { NextPage } from 'next';
+import { signIn, signOut, useSession } from "next-auth/client";
+import Nav from '../components/nav';
 
 export default function Page() {
   const [session, loading] = useSession()
 
   return (
-    <>
+    <div>
+      <Nav />
       {!session && (
         <div className="text-3xl">
           Not signed in <br />
@@ -22,6 +25,6 @@ export default function Page() {
           Carregando...
         </div>
       )}
-    </>
+    </div>
   )
 }
