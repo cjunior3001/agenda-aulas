@@ -6,6 +6,20 @@ export default async function helloAPI(req, res) {
     // console.log(teacher);
     // console.log(teacher == null);
 
+    //check se o availablehours esta entre 7 e 20hs
+    let invalidHour = false;
+    for(const dayOfTheWeek in available_hours){
+      available_hours[dayOfTheWeek].forEach((hour) => {
+          if (hour < 7 || hour > 20){
+            invalidHour = true;
+            return;
+          }
+      })
+    }
+    if(invalidHour){
+      res.status(400).json({message: 'Hora fora de 20 e 7'});
+        return;
+    }
 
     if (teacher == null || !teacher){
       // console.log("entrou aqui");
