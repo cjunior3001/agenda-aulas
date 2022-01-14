@@ -13,7 +13,8 @@ export default async function helloAPI(req, res) {
 
     const db = client.db('teach-other');
 
-    const response = await db.collection('users').find({ courses }).toArray();
+    //const response = await db.collection('users').find({ courses }).toArray();
+    const response = await db.collection('users').find({ courses: { $in: [new RegExp(`${courses}`, 'i')] } }).toArray();
 
     if (response.length === 0) {
       res.status(400).json({ error: "Course nao encontrado" });

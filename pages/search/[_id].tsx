@@ -1,10 +1,12 @@
 import axios from 'axios';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import NavBar from '../../components/nav';
 
 
 export default function teacherProfilePage({name, email, _id}):JSX.Element {
   return (
     <>
+      <NavBar />
       <h1 className="text-3xl">Pagina do professor {name}</h1>
       <h1 className="text-2xl">Email {email}</h1>
       <h1 className="text-2xl">Id {_id}</h1>

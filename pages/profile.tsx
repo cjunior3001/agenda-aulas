@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NextPage } from 'next';
+import axios from 'axios';
 import useSWR from 'swr';
 import { signIn, signOut, useSession } from "next-auth/client";
 
@@ -8,17 +9,18 @@ import Nav from '../components/nav';
 
 const ProfilePage: NextPage = () => {
   const [isTeacher, setIsTeacher] = useState(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [cellphone, setCellphone] = useState("");
-  const [courses, setCourses] = useState("");
-  const [availableLocations, setAvailableLocations] = useState("");
+  const [name, setName] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [cellphone, setCellphone] = useState(null);
+  const [courses, setCourses] = useState(null);
+  const [availableLocations, setAvailableLocations] = useState(null);
   /* const [availableHours, setAvailableHours] = useState(""); */
-  const [monday, setMonday] = useState("");
-  const [tuesday, setTuesday] = useState("");
-  const [wednesday, setWednesday] = useState("");
-  const [thursday, setThursday] = useState("");
-  const [friday, setFriday] = useState("");
+  const [monday, setMonday] = useState(null);
+  const [tuesday, setTuesday] = useState(null);
+  const [wednesday, setWednesday] = useState(null);
+  const [thursday, setThursday] = useState(null);
+  const [friday, setFriday] = useState(null);
+  const [errorCount, setErrorCount] = useState(0);
   const [loggedWithoutAccount, setLoggedWithoutAccount] = useState(false);
 
   const [session, loading] = useSession();
@@ -27,21 +29,48 @@ const ProfilePage: NextPage = () => {
 
   /* o error aqui vai disparar o useEffect */
   useEffect(() => {
-    if(error) setLoggedWithoutAccount(true);
-  }, [error])
+    setErrorCount((prevstate) => prevstate + 1);
+    if(error && errorCount === 1) setLoggedWithoutAccount(true);
+  }, [error, setErrorCount]);
 
-  const handleSubmit= () => {
+  const handleSubmit = async () => {
       event.preventDefault();
+
+      const available_hours = {
+        monday: monday?.split(",").map(item => item.trim()).map((item) => parseInt(item)),
+        tuesday: tuesday?.split(",").map(item => item.trim()).map((item) => parseInt(item)),
+        wednesday: wednesday?.split(",").map(item => item.trim()).map((item) => parseInt(item)),
+        thursday: thursday?.split(",").map(item => item.trim()).map((item) => parseInt(item)),
+        friday: friday?.split(",").map(item => item.trim()).map((item) => parseInt(item)),
+      }
+
+      //se nao tiver hora para algum dia, deleta aquele dia
+      for(const dayOfTheWeek in available_hours){
+        if(!available_hours[dayOfTheWeek]) delete available_hours[dayOfTheWeek];
+      }
 
       const data = {
         name,
         email,
         cellphone,
-        courses: courses.split(",").map(item => item.trim()),
-        availableLocations: availableLocations.split(",").map(item => item.trim()),
+        courses: courses?.split(",").map(item => item.trim()),
+        teacher: isTeacher,
+        available_locations: availableLocations?.split(",").map(item => item.trim()),
+        available_hours,
       }
 
-      console.log(data);
+      //console.log(data);
+      let error;
+      try {   
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/user`, data);
+        //se der tudo certo o usuario agora tem conta
+        setLoggedWithoutAccount(false);
+      } catch (err) {
+        if(err.response){
+          console.log(err.response.data);
+          alert(err.response.data.message)
+        }
+      }      
       
   }
 
@@ -73,13 +102,13 @@ const ProfilePage: NextPage = () => {
           <h1 className="text-3xl">{data.data.coins} moedas</h1>
         </>
       )}
-      {loggedWithoutAccount && (
+      {loggedWithoutAccount && session && (
         <div className="flex flex-col items-center">
           <h1 className="text-3xl">O usuario com email {session?.user.email} nao existe</h1>
           <h1 className="text-2xl">Favor efetuar seu cadastro</h1>
           <form onSubmit={handleSubmit} className="flex flex-col items-center">
             <input type="text" 
-              value={name} 
+              value={name == null ? '' : name} 
               onChange={(e) => {
                 setName(e.target.value);              
               }} 
@@ -87,7 +116,7 @@ const ProfilePage: NextPage = () => {
               className="bg-pink-200 my-3"
             />
             <input type="email"            
-              value={email} 
+              value={email == null ? '' : email} 
               onChange={(e) => {
                 setEmail(e.target.value);              
               }} 
@@ -95,7 +124,7 @@ const ProfilePage: NextPage = () => {
               className="bg-pink-200 my-3" 
             />
             <input type="cellphone" 
-              value={cellphone} 
+              value={cellphone == null ? '' : cellphone} 
               onChange={(e) => {
                 setCellphone(e.target.value);              
               }} 
@@ -113,7 +142,7 @@ const ProfilePage: NextPage = () => {
                 <>
                   <h1>Escreva suas materias</h1>
                   <input type="text" 
-                    value={courses} 
+                    value={courses == null ? '' : courses} 
                     onChange={(e) => {
                       setCourses(e.target.value);              
                     }} 
@@ -122,7 +151,7 @@ const ProfilePage: NextPage = () => {
                   />
                   <h1>Local da aula</h1>
                   <input type="text" 
-                    value={availableLocations} 
+                    value={availableLocations == null ? '' : availableLocations} 
                     onChange={(e) => {
                       setAvailableLocations(e.target.value);              
                     }} 
@@ -132,7 +161,7 @@ const ProfilePage: NextPage = () => {
                   <h1>Escreva os horarios:</h1>
                   <h1>Segunda</h1>
                   <input type="text" 
-                    value={monday} 
+                    value={monday == null ? '' : monday} 
                     onChange={(e) => {
                       setMonday(e.target.value);              
                     }} 
@@ -141,7 +170,7 @@ const ProfilePage: NextPage = () => {
                   />
                   <h1>Terça</h1>
                   <input type="text" 
-                    value={tuesday} 
+                    value={tuesday == null ? '' : tuesday} 
                     onChange={(e) => {
                       setTuesday(e.target.value);              
                     }} 
@@ -150,7 +179,7 @@ const ProfilePage: NextPage = () => {
                   />
                   <h1>Quarta</h1>
                   <input type="text" 
-                    value={wednesday} 
+                    value={wednesday == null ? '' : wednesday} 
                     onChange={(e) => {
                       setWednesday(e.target.value);              
                     }} 
@@ -159,7 +188,7 @@ const ProfilePage: NextPage = () => {
                     />
                   <h1>Quinta</h1>
                   <input type="text" 
-                    value={thursday} 
+                    value={thursday == null ? '' : thursday} 
                     onChange={(e) => {
                       setThursday(e.target.value);              
                     }} 
@@ -168,7 +197,7 @@ const ProfilePage: NextPage = () => {
                   />
                   <h1>Sexta</h1>
                   <input type="text" 
-                    value={friday} 
+                    value={friday == null ? '' : friday} 
                     onChange={(e) => {
                       setFriday(e.target.value);              
                     }} 
